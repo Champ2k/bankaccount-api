@@ -2,7 +2,9 @@ package th.ac.ku.bankaccount.controller;
 
 import org.springframework.web.bind.annotation.*;
 import th.ac.ku.bankaccount.data.BankAccountRepository;
+import th.ac.ku.bankaccount.data.TransactionRepository;
 import th.ac.ku.bankaccount.model.BankAccount;
+import th.ac.ku.bankaccount.model.Transaction;
 
 import java.util.List;
 
@@ -11,6 +13,7 @@ import java.util.List;
 public class BankAccountRestController {
 
     private BankAccountRepository repository;
+    private TransactionRepository Treanrepository;
 
     public BankAccountRestController(BankAccountRepository repository) {
         this.repository = repository;
@@ -41,7 +44,8 @@ public class BankAccountRestController {
 
     @PutMapping("/{id}")
     public BankAccount update(@PathVariable int id,
-                              @RequestBody BankAccount bankAccount) {
+                              @RequestBody BankAccount bankAccount,
+                              @RequestBody  Transaction transaction) {
         BankAccount record = repository.findById(id).get();
         record.setBalance(bankAccount.getBalance());
         repository.save(record);
@@ -55,5 +59,17 @@ public class BankAccountRestController {
         return record;
     }
 
+    @PostMapping("/trasaction")
+    public BankAccount changeBalance(@RequestBody Transaction transaction){
+        System.out.println(transaction);
+        BankAccount record = repository.findById(transaction.getBankId()).get();
+        if (transaction.getTransactiontype().toLowerCase().equals("withdraw")){
+            record.setBalance(record.getBalance() - transaction.getAmount());
+        }else if ((transaction.getTransactiontype().toLowerCase().equals("deposit"))){
+            record.setBalance(record.getBalance() + transaction.getAmount());
+        }
+        repository.save(record);
+        return record;
+    }
 }
 
